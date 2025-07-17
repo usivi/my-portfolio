@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Capabilities Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .capability-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .capability-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4, #45b7d1);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .card-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .demo-button {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .demo-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .demo-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            min-height: 60px;
+            display: none;
+        }
+
+        .demo-area.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .demo-output {
+            color: #4ecdc4;
+            font-family: 'Monaco', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        .neural-network {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .connection {
+            position: absolute;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            transform-origin: left;
+        }
+
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid #4ecdc4;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #4ecdc4; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .capability-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="neural-network" id="neuralNetwork"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>AI for NZ Trade & Enterprise</h1>
+            <p>Unlocking AI Potential for International Business Growth</p>
+        </div>
+
+        <div class="capabilities-grid">
+            <div class="capability-card">
+                <div class="card-icon">🤝</div>
+                <h3 class="card-title">Business Process Analysis</h3>
+                <p class="card-description">Identify AI opportunities across business units, analyze workflows, and map process inefficiencies to create compelling business cases for AI implementation.</p>
+                <button class="demo-button" onclick="demonstrateProcessAnalysis()">Analyze Workflow</button>
+                <div class="demo-area" id="process-demo">
+                    <div class="demo-output" id="process-output"></div>
+                </div>
+            </div>
+
+            <div class="capability-card">
+                <div class="card-icon">📈</div>
+                <h3 class="card-title">AI ROI & Business Cases</h3>
+                <p class="card-description">Build compelling business cases with clear ROI calculations, risk assessments, and implementation timelines to support AI investment decisions.</p>
+                <button class="demo-button" onclick="demonstrateBusinessCase()">Generate Business Case</button>
+                <div class="demo-area" id="business-demo">
+                    <div class="demo-output" id="business-output"></div>
+                </div>
+            </div>
+
+            <div class="capability-card">
+                <div class="card-icon">🌐</div>
+                <h3 class="card-title">Trade Intelligence & Export Support</h3>
+                <p class="card-description">Leverage AI to analyze global market trends, identify export opportunities, and support NZ companies in international expansion strategies.</p>
+                <button class="demo-button" onclick="demonstrateTradeIntel()">Analyze Export Markets</button>
+                <div class="demo-area" id="trade-demo">
+                    <div class="demo-output" id="trade-output"></div>
+                </div>
+            </div>
+
+            <div class="capability-card">
+                <div class="card-icon">🤖</div>
+                <h3 class="card-title">AI Agent Development</h3>
+                <p class="card-description">Design and prototype AI agents for business use cases, including customer service, process automation, and decision support systems.</p>
+                <button class="demo-button" onclick="demonstrateAIAgent()">Build AI Agent</button>
+                <div class="demo-area" id="agent-demo">
+                    <div class="demo-output" id="agent-output"></div>
+                </div>
+            </div>
+
+            <div class="capability-card">
+                <div class="card-icon">💼</div>
+                <h3 class="card-title">Microsoft 365 Copilot Integration</h3>
+                <p class="card-description">Optimize Microsoft 365 Copilot deployment, analyze usage patterns, and identify opportunities for enhanced productivity across teams.</p>
+                <button class="demo-button" onclick="demonstrateCopilot()">Optimize Copilot Usage</button>
+                <div class="demo-area" id="copilot-demo">
+                    <div class="demo-output" id="copilot-output"></div>
+                </div>
+            </div>
+
+            <div class="capability-card">
+                <div class="card-icon">🔗</div>
+                <h3 class="card-title">Stakeholder Communication</h3>
+                <p class="card-description">Translate complex AI concepts into clear business language, facilitate cross-functional collaboration, and bridge technical and business teams.</p>
+                <button class="demo-button" onclick="demonstrateStakeholder()">Generate Stakeholder Report</button>
+                <div class="demo-area" id="stakeholder-demo">
+                    <div class="demo-output" id="stakeholder-output"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" id="processing-speed">94%</span>
+                    <span class="stat-label">Process Efficiency Gain</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="accuracy-rate">15</span>
+                    <span class="stat-label">Business Units Analyzed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="tasks-completed">$2.4M</span>
+                    <span class="stat-label">Cost Savings Identified</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="languages-supported">8</span>
+                    <span class="stat-label">AI Tools Evaluated</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Neural network background animation
+        function createNeuralNetwork() {
+            const network = document.getElementById('neuralNetwork');
+            const nodes = [];
+            const connections = [];
+            
+            // Create nodes
+            for (let i = 0; i < 50; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.style.left = Math.random() * 100 + '%';
+                node.style.top = Math.random() * 100 + '%';
+                node.style.animationDelay = Math.random() * 2 + 's';
+                network.appendChild(node);
+                nodes.push(node);
+            }
+            
+            // Create connections
+            for (let i = 0; i < 30; i++) {
+                const connection = document.createElement('div');
+                connection.className = 'connection';
+                const startNode = nodes[Math.floor(Math.random() * nodes.length)];
+                const endNode = nodes[Math.floor(Math.random() * nodes.length)];
+                
+                if (startNode !== endNode) {
+                    const startRect = startNode.getBoundingClientRect();
+                    const endRect = endNode.getBoundingClientRect();
+                    const distance = Math.sqrt(
+                        Math.pow(endRect.left - startRect.left, 2) + 
+                        Math.pow(endRect.top - startRect.top, 2)
+                    );
+                    
+                    if (distance < 300) {
+                        connection.style.left = startNode.style.left;
+                        connection.style.top = startNode.style.top;
+                        connection.style.width = distance + 'px';
+                        connection.style.transform = `rotate(${Math.atan2(
+                            endRect.top - startRect.top,
+                            endRect.left - startRect.left
+                        )}rad)`;
+                        network.appendChild(connection);
+                    }
+                }
+            }
+        }
+
+        // Demo functions tailored for NZTE Digital Analyst role
+        function demonstrateProcessAnalysis() {
+            const demo = document.getElementById('process-demo');
+            const output = document.getElementById('process-output');
+            demo.classList.add('active');
+            
+            const analysis = [
+                "🔍 Analyzing export documentation workflow...",
+                "📊 Current process: 14 manual steps, 3.2 hours average",
+                "🎯 AI opportunity: Document classification & data extraction",
+                "💰 Potential savings: 67% time reduction (2.1 hours)",
+                "⚡ Implementation effort: Medium (6-8 weeks)",
+                "✅ Recommendation: Pilot with 10 high-volume companies"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < analysis.length) {
+                    output.textContent += analysis[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 700);
+        }
+
+        function demonstrateBusinessCase() {
+            const demo = document.getElementById('business-demo');
+            const output = document.getElementById('business-output');
+            demo.classList.add('active');
+            
+            const businessCase = [
+                "📈 AI Implementation Business Case",
+                "💵 Investment required: $180,000 (Year 1)",
+                "⏱️ Time savings: 2,400 hours annually",
+                "💰 Cost benefit: $420,000 annual savings",
+                "📊 ROI: 233% within 12 months",
+                "🎯 Risk level: Low (proven technology)",
+                "🚀 Strategic value: High (competitive advantage)"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < businessCase.length) {
+                    output.textContent += businessCase[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+        }
+
+        function demonstrateTradeIntel() {
+            const demo = document.getElementById('trade-demo');
+            const output = document.getElementById('trade-output');
+            demo.classList.add('active');
+            
+            const tradeData = [
+                "🌏 Analyzing global export opportunities...",
+                "📈 Southeast Asia: 34% growth in NZ food imports",
+                "🎯 Opportunity: Premium dairy products to Singapore",
+                "💡 AI insight: Regulatory compliance automation",
+                "📊 Market size: $2.8B annually (growing 12%)",
+                "🚀 Success probability: 78% (based on similar companies)"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < tradeData.length) {
+                    output.textContent += tradeData[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 750);
+        }
+
+        function demonstrateAIAgent() {
+            const demo = document.getElementById('agent-demo');
+            const output = document.getElementById('agent-output');
+            demo.classList.add('active');
+            
+            const agent = [
+                "🤖 Building NZTE Export Assistant Agent...",
+                "🧠 Knowledge base: Trade regulations, market data, case studies",
+                "💬 Capabilities: Q&A, document generation, process guidance",
+                "🔗 Integrations: CRM, document management, regulatory APIs",
+                "📊 Training data: 10,000+ successful export cases",
+                "✅ Prototype ready: 89% accuracy in initial testing"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < agent.length) {
+                    output.textContent += agent[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 700);
+        }
+
+        function demonstrateCopilot() {
+            const demo = document.getElementById('copilot-demo');
+            const output = document.getElementById('copilot-output');
+            demo.classList.add('active');
+            
+            const copilot = [
+                "💼 Optimizing Microsoft 365 Copilot deployment...",
+                "📊 Usage analysis: 67% adoption across teams",
+                "⚡ Productivity gains: 2.3 hours/week per user",
+                "💡 Top use cases: Email drafting, report generation",
+                "🎯 Optimization opportunity: Custom prompts for trade docs",
+                "📈 Potential uplift: Additional 45 minutes/week savings"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < copilot.length) {
+                    output.textContent += copilot[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+        }
+
+        function demonstrateStakeholder() {
+            const demo = document.getElementById('stakeholder-demo');
+            const output = document.getElementById('stakeholder-output');
+            demo.classList.add('active');
+            
+            const stakeholder = [
+                "📋 Executive Summary: AI Implementation Progress",
+                "🎯 Objective: Enhance export support efficiency",
+                "✅ Achievements: 3 pilot programs launched successfully",
+                "📊 Key metrics: 40% faster client onboarding",
+                "💡 Next steps: Scale to additional business units",
+                "🤝 Stakeholder feedback: 92% positive response"
+            ];
+            
+            output.textContent = '';
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < stakeholder.length) {
+                    output.textContent += stakeholder[index] + '\n';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 750);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            createNeuralNetwork();
+            
+            // Animate stats on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateStats();
+                    }
+                });
+            });
+            
+            observer.observe(document.querySelector('.stats-bar'));
+        });
+
+        function animateStats() {
+            const stats = [
+                { id: 'processing-speed', start: 0, end: 94, suffix: '%', decimals: 0 },
+                { id: 'accuracy-rate', start: 0, end: 15, suffix: '', decimals: 0 },
+                { id: 'tasks-completed', start: 0, end: 2.4, suffix: 'M', decimals: 1 },
+                { id: 'languages-supported', start: 0, end: 8, suffix: '', decimals: 0 }
+            ];
+            
+            stats.forEach(stat => {
+                const element = document.getElementById(stat.id);
+                let current = stat.start;
+                const increment = (stat.end - stat.start) / 100;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= stat.end) {
+                        current = stat.end;
+                        clearInterval(timer);
+                    }
+                    element.textContent = current.toFixed(stat.decimals) + stat.suffix;
+                }, 20);
+            });
+        }
+    </script>
+</body>
+</html>
