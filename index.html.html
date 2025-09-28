@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housing Equity AI Dashboard - New Zealand</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fallback for icons if Lucide fails -->
+    <script>
+        // Simple icon fallbacks
+        window.iconFallbacks = {
+            Home: '🏠',
+            Clock: '⏰', 
+            Heart: '💝',
+            Shield: '🛡️',
+            AlertTriangle: '⚠️',
+            Users: '👥',
+            TrendingUp: '📈',
+            MapPin: '📍'
+        };
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .city-background {
+            background-image: linear-gradient(rgba(249, 250, 251, 0.90), rgba(249, 250, 251, 0.90)), 
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2306b6d4'/%3E%3Cstop offset='1' stop-color='%23065f46'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='400' fill='url(%23a)' opacity='0.1'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.15'%3E%3Crect x='50' y='50' width='80' height='60' rx='4'/%3E%3Crect x='150' y='30' width='100' height='80' rx='4'/%3E%3Crect x='270' y='60' width='70' height='50' rx='4'/%3E%3Crect x='80' y='130' width='90' height='70' rx='4'/%3E%3Crect x='200' y='140' width='120' height='60' rx='4'/%3E%3Crect x='40' y='220' width='110' height='80' rx='4'/%3E%3Crect x='180' y='230' width='90' height='70' rx='4'/%3E%3Crect x='290' y='210' width='80' height='90' rx='4'/%3E%3Crect x='60' y='320' width='100' height='60' rx='4'/%3E%3Crect x='190' y='330' width='130' height='50' rx='4'/%3E%3Cpath d='M20 20L380 20M20 100L380 100M20 180L380 180M20 260L380 260M20 340L380 340' stroke-opacity='0.1'/%3E%3Cpath d='M20 20L20 380M100 20L100 380M180 20L180 380M260 20L260 380M340 20L340 380' stroke-opacity='0.1'/%3E%3C/g%3E%3Ccircle cx='75' cy='75' r='3' fill='%2310b981' opacity='0.6'/%3E%3Ccircle cx='200' cy='60' r='3' fill='%2310b981' opacity='0.6'/%3E%3Ccircle cx='320' cy='100' r='3' fill='%2310b981' opacity='0.6'/%3E%3Ccircle cx='120' cy='160' r='3' fill='%2310b981' opacity='0.6'/%3E%3Ccircle cx='250' cy='170' r='3' fill='%2310b981' opacity='0.6'/%3E%3C/svg%3E");
+            background-size: 400px 400px;
+            background-position: center;
+            background-repeat: repeat;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ScatterChart, Scatter } = window.Recharts || {};
+        
+        // Safe icon loading with fallbacks
+        const getIcon = (iconName) => {
+            if (window.lucide && window.lucide[iconName]) {
+                return window.lucide[iconName];
+            }
+            // Fallback to simple div with emoji or text
+            return ({ className, ...props }) => 
+                React.createElement('div', { 
+                    className: className + ' flex items-center justify-center',
+                    ...props 
+                }, window.iconFallbacks[iconName] || iconName);
+        };
+
+        const Home = getIcon('Home');
+        const Users = getIcon('Users');
+        const AlertTriangle = getIcon('AlertTriangle');
+        const TrendingUp = getIcon('TrendingUp');
+        const MapPin = getIcon('MapPin');
+        const Clock = getIcon('Clock');
+        const Shield = getIcon('Shield');
+        const Heart = getIcon('Heart');
+
+        const HousingEquityDashboard = () => {
+            const [selectedRegion, setSelectedRegion] = useState('Auckland');
+            const [selectedTimeframe, setSelectedTimeframe] = useState('6months');
+            const [activeTab, setActiveTab] = useState('overview');
+
+            // Sample data representing AI-driven insights
+            const housingStressData = [
+                { month: 'Jan', predictions: 245, actual: 238, prevented: 12 },
+                { month: 'Feb', predictions: 267, actual: 251, prevented: 18 },
+                { month: 'Mar', predictions: 289, actual: 276, prevented: 15 },
+                { month: 'Apr', predictions: 312, actual: 298, prevented: 22 },
+                { month: 'May', predictions: 298, actual: 285, prevented: 19 },
+                { month: 'Jun', predictions: 324, actual: 307, prevented: 25 }
+            ];
+
+            const ethnicityData = [
+                { ethnicity: 'Māori', waitTime: 8.2, satisfaction: 72, housed: 156 },
+                { ethnicity: 'Pacific', waitTime: 9.1, satisfaction: 68, housed: 143 },
+                { ethnicity: 'European', waitTime: 6.4, satisfaction: 78, housed: 234 },
+                { ethnicity: 'Asian', waitTime: 7.1, satisfaction: 75, housed: 89 },
+                { ethnicity: 'Other', waitTime: 7.8, satisfaction: 74, housed: 67 }
+            ];
+
+            const culturalMatchingData = [
+                { name: 'Proximity to Marae', value: 87 },
+                { name: 'Extended Whānau Support', value: 92 },
+                { name: 'Community Services', value: 84 },
+                { name: 'Transport Links', value: 76 },
+                { name: 'Cultural Centers', value: 89 }
+            ];
+
+            const interventionData = [
+                { type: 'Early Warning', count: 45, success: 78 },
+                { type: 'Financial Support', count: 67, success: 84 },
+                { type: 'Mediation', count: 23, success: 91 },
+                { type: 'Emergency Housing', count: 34, success: 67 },
+                { type: 'Community Support', count: 56, success: 86 }
+            ];
+
+            const COLORS = ['#8B5CF6', '#06B6D4', '#F59E0B', '#EF4444', '#10B981'];
+            const regions = ['Auckland', 'Wellington', 'Christchurch', 'Hamilton', 'Tauranga', 'Rotorua'];
+
+            const KPICard = ({ title, value, change, icon: Icon, color = 'blue' }) => (
+                React.createElement('div', {
+                    className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20"
+                }, [
+                    React.createElement('div', {
+                        key: 'content',
+                        className: "flex items-center justify-between"
+                    }, [
+                        React.createElement('div', { key: 'text' }, [
+                            React.createElement('p', {
+                                key: 'title',
+                                className: "text-sm font-medium text-gray-600"
+                            }, title),
+                            React.createElement('p', {
+                                key: 'value',
+                                className: "text-2xl font-bold text-gray-900"
+                            }, value),
+                            change && React.createElement('p', {
+                                key: 'change',
+                                className: `text-sm ${change > 0 ? 'text-green-600' : 'text-red-600'}`
+                            }, `${change > 0 ? '↑' : '↓'} ${Math.abs(change)}% from last month`)
+                        ]),
+                        React.createElement('div', {
+                            key: 'icon',
+                            className: `p-3 bg-${color}-100 rounded-lg`
+                        }, React.createElement(Icon, {
+                            className: `h-6 w-6 text-${color}-600`
+                        }))
+                    ])
+                ])
+            );
+
+            const AlertCard = ({ level, message, count, action }) => {
+                const colors = {
+                    high: 'border-red-200 bg-red-50 text-red-800',
+                    medium: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+                    low: 'border-blue-200 bg-blue-50 text-blue-800'
+                };
+
+                return React.createElement('div', {
+                    className: `p-4 rounded-lg border ${colors[level]}`
+                }, React.createElement('div', {
+                    className: "flex items-center justify-between"
+                }, [
+                    React.createElement('div', {
+                        key: 'content',
+                        className: "flex items-center"
+                    }, [
+                        React.createElement(AlertTriangle, {
+                            key: 'icon',
+                            className: "h-5 w-5 mr-2"
+                        }),
+                        React.createElement('div', { key: 'text' }, [
+                            React.createElement('p', {
+                                key: 'message',
+                                className: "font-medium"
+                            }, message),
+                            React.createElement('p', {
+                                key: 'count',
+                                className: "text-sm opacity-75"
+                            }, `${count} households identified`)
+                        ])
+                    ]),
+                    React.createElement('button', {
+                        key: 'button',
+                        className: "px-3 py-1 bg-white rounded text-sm font-medium hover:bg-gray-50"
+                    }, action)
+                ]));
+            };
+
+            return React.createElement('div', {
+                className: "min-h-screen bg-gray-50 relative city-background"
+            }, [
+                // Header
+                React.createElement('div', {
+                    key: 'header',
+                    className: "bg-white bg-opacity-95 glass-effect shadow-sm relative"
+                }, React.createElement('div', {
+                    className: "max-w-7xl mx-auto px-4 py-4"
+                }, [
+                    React.createElement('div', {
+                        key: 'header-content',
+                        className: "flex items-center justify-between"
+                    }, [
+                        React.createElement('div', { key: 'title' }, [
+                            React.createElement('h1', {
+                                key: 'h1',
+                                className: "text-2xl font-bold text-gray-900"
+                            }, 'Housing Equity AI Dashboard'),
+                            React.createElement('p', {
+                                key: 'subtitle',
+                                className: "text-gray-600"
+                            }, 'Culturally Responsive Housing Solutions for Aotearoa')
+                        ]),
+                        React.createElement('div', {
+                            key: 'controls',
+                            className: "flex items-center space-x-4"
+                        }, [
+                            React.createElement('select', {
+                                key: 'region-select',
+                                value: selectedRegion,
+                                onChange: (e) => setSelectedRegion(e.target.value),
+                                className: "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            }, regions.map(region => 
+                                React.createElement('option', {
+                                    key: region,
+                                    value: region
+                                }, region)
+                            )),
+                            React.createElement('select', {
+                                key: 'time-select',
+                                value: selectedTimeframe,
+                                onChange: (e) => setSelectedTimeframe(e.target.value),
+                                className: "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            }, [
+                                React.createElement('option', { key: '1month', value: '1month' }, '1 Month'),
+                                React.createElement('option', { key: '3months', value: '3months' }, '3 Months'),
+                                React.createElement('option', { key: '6months', value: '6months' }, '6 Months'),
+                                React.createElement('option', { key: '1year', value: '1year' }, '1 Year')
+                            ])
+                        ])
+                    ]),
+                    // Tab Navigation
+                    React.createElement('div', {
+                        key: 'tabs',
+                        className: "mt-6 border-b border-gray-200"
+                    }, React.createElement('nav', {
+                        className: "-mb-px flex space-x-8"
+                    }, ['overview', 'predictions', 'cultural-matching', 'interventions', 'community'].map((tab) =>
+                        React.createElement('button', {
+                            key: tab,
+                            onClick: () => setActiveTab(tab),
+                            className: `py-2 px-1 border-b-2 font-medium text-sm capitalize ${
+                                activeTab === tab
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`
+                        }, tab.replace('-', ' '))
+                    )))
+                ])),
+
+                // Main Content
+                React.createElement('div', {
+                    key: 'content',
+                    className: "max-w-7xl mx-auto px-4 py-6"
+                }, [
+                    // Overview Tab
+                    activeTab === 'overview' && React.createElement('div', {
+                        key: 'overview',
+                        className: "space-y-6"
+                    }, [
+                        // KPI Cards
+                        React.createElement('div', {
+                            key: 'kpis',
+                            className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                        }, [
+                            React.createElement(KPICard, {
+                                key: 'kpi1',
+                                title: "Families Housed This Month",
+                                value: "234",
+                                change: 12,
+                                icon: Home,
+                                color: "green"
+                            }),
+                            React.createElement(KPICard, {
+                                key: 'kpi2',
+                                title: "Average Wait Time (weeks)",
+                                value: "7.2",
+                                change: -8,
+                                icon: Clock,
+                                color: "blue"
+                            }),
+                            React.createElement(KPICard, {
+                                key: 'kpi3',
+                                title: "Cultural Match Score",
+                                value: "85%",
+                                change: 5,
+                                icon: Heart,
+                                color: "purple"
+                            }),
+                            React.createElement(KPICard, {
+                                key: 'kpi4',
+                                title: "Crisis Interventions",
+                                value: "67",
+                                change: -15,
+                                icon: Shield,
+                                color: "orange"
+                            })
+                        ]),
+
+                        // AI Alerts
+                        React.createElement('div', {
+                            key: 'alerts',
+                            className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20"
+                        }, [
+                            React.createElement('h3', {
+                                key: 'alerts-title',
+                                className: "text-lg font-semibold mb-4"
+                            }, 'AI-Powered Early Warnings'),
+                            React.createElement('div', {
+                                key: 'alerts-list',
+                                className: "space-y-3"
+                            }, [
+                                React.createElement(AlertCard, {
+                                    key: 'alert1',
+                                    level: "high",
+                                    message: "High eviction risk detected in Māngere East",
+                                    count: 12,
+                                    action: "Deploy Support"
+                                }),
+                                React.createElement(AlertCard, {
+                                    key: 'alert2',
+                                    level: "medium",
+                                    message: "Rental stress indicators rising in Henderson",
+                                    count: 8,
+                                    action: "Monitor"
+                                }),
+                                React.createElement(AlertCard, {
+                                    key: 'alert3',
+                                    level: "low",
+                                    message: "Positive housing stability trend in Ōtāhuhu",
+                                    count: 23,
+                                    action: "Document"
+                                })
+                            ])
+                        ]),
+
+                        // Housing Stress Chart
+                        window.Recharts ? React.createElement('div', {
+                            key: 'chart',
+                            className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20"
+                        }, [
+                            React.createElement('h3', {
+                                key: 'chart-title',
+                                className: "text-lg font-semibold mb-4"
+                            }, 'Housing Stress Predictions vs Actual'),
+                            React.createElement(ResponsiveContainer, {
+                                key: 'chart-container',
+                                width: "100%",
+                                height: 300
+                            }, React.createElement(LineChart, {
+                                data: housingStressData
+                            }, [
+                                React.createElement(CartesianGrid, {
+                                    key: 'grid',
+                                    strokeDasharray: "3 3"
+                                }),
+                                React.createElement(XAxis, {
+                                    key: 'xaxis',
+                                    dataKey: "month"
+                                }),
+                                React.createElement(YAxis, { key: 'yaxis' }),
+                                React.createElement(Tooltip, { key: 'tooltip' }),
+                                React.createElement(Legend, { key: 'legend' }),
+                                React.createElement(Line, {
+                                    key: 'predictions',
+                                    type: "monotone",
+                                    dataKey: "predictions",
+                                    stroke: "#8B5CF6",
+                                    strokeWidth: 2,
+                                    name: "AI Predictions"
+                                }),
+                                React.createElement(Line, {
+                                    key: 'actual',
+                                    type: "monotone",
+                                    dataKey: "actual",
+                                    stroke: "#06B6D4",
+                                    strokeWidth: 2,
+                                    name: "Actual Cases"
+                                }),
+                                React.createElement(Line, {
+                                    key: 'prevented',
+                                    type: "monotone",
+                                    dataKey: "prevented",
+                                    stroke: "#10B981",
+                                    strokeWidth: 2,
+                                    name: "Crises Prevented"
+                                })
+                            ]))
+                        ]) : React.createElement('div', {
+                            key: 'chart-fallback',
+                            className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20 text-center"
+                        }, [
+                            React.createElement('h3', {
+                                key: 'fallback-title',
+                                className: "text-lg font-semibold mb-4"
+                            }, 'Housing Stress Data'),
+                            React.createElement('p', {
+                                key: 'fallback-text',
+                                className: "text-gray-600"
+                            }, 'Chart library loading... Data shows consistent AI prediction accuracy with 25 crises prevented this month.')
+                        ])
+                    ]),
+
+                    // Cultural Matching Tab
+                    activeTab === 'cultural-matching' && React.createElement('div', {
+                        key: 'cultural',
+                        className: "space-y-6"
+                    }, [
+                        React.createElement('div', {
+                            key: 'cultural-grid',
+                            className: "grid grid-cols-1 lg:grid-cols-2 gap-6"
+                        }, [
+                            React.createElement('div', {
+                                key: 'pie-chart',
+                                className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20"
+                            }, [
+                                React.createElement('h3', {
+                                    key: 'pie-title',
+                                    className: "text-lg font-semibold mb-4"
+                                }, 'Cultural Matching Factors'),
+                                window.Recharts ? React.createElement(ResponsiveContainer, {
+                                    key: 'pie-container',
+                                    width: "100%",
+                                    height: 300
+                                }, React.createElement(PieChart, {}, React.createElement(Pie, {
+                                    data: culturalMatchingData,
+                                    cx: "50%",
+                                    cy: "50%",
+                                    labelLine: false,
+                                    label: ({ name, value }) => `${name}: ${value}%`,
+                                    outerRadius: 80,
+                                    fill: "#8884d8",
+                                    dataKey: "value"
+                                }, culturalMatchingData.map((entry, index) =>
+                                    React.createElement(Cell, {
+                                        key: `cell-${index}`,
+                                        fill: COLORS[index % COLORS.length]
+                                    })
+                                )))) : React.createElement('div', {
+                                    key: 'pie-fallback',
+                                    className: "space-y-2"
+                                }, culturalMatchingData.map((item, index) => 
+                                    React.createElement('div', {
+                                        key: item.name,
+                                        className: "flex justify-between p-2 rounded",
+                                        style: { backgroundColor: COLORS[index % COLORS.length] + '20' }
+                                    }, [
+                                        React.createElement('span', { key: 'name' }, item.name),
+                                        React.createElement('span', { key: 'value', className: "font-bold" }, `${item.value}%`)
+                                    ])
+                                ))
+                            ]),
+
+                            React.createElement('div', {
+                                key: 'metrics',
+                                className: "bg-white bg-opacity-95 glass-effect p-6 rounded-lg shadow-sm border border-white border-opacity-20"
+                            }, [
+                                React.createElement('h3', {
+                                    key: 'metrics-title',
+                                    className: "text-lg font-semibold mb-4"
+                                }, 'Cultural Responsiveness Metrics'),
+                                React.createElement('div', {
+                                    key: 'metrics-grid',
+                                    className: "grid grid-cols-1 gap-4"
+                                }, [
+                                    React.createElement('div', {
+                                        key: 'metric1',
+                                        className: "text-center p-4 bg-purple-50 rounded-lg"
+                                    }, [
+                                        React.createElement('div', {
+                                            key: 'value1',
+                                            className: "text-2xl font-bold text-purple-600"
+                                        }, '92%'),
+                                        React.createElement('div', {
+                                            key: 'label1',
+                                            className: "text-sm text-gray-600"
+                                        }, 'Whānau satisfied with cultural consideration')
+                                    ]),
+                                    React.createElement('div', {
+                                        key: 'metric2',
+                                        className: "text-center p-4 bg-blue-50 rounded-lg"
+                                    }, [
+                                        React.createElement('div', {
+                                            key: 'value2',
+                                            className: "text-2xl font-bold text-blue-600"
+                                        }, '78%'),
+                                        React.createElement('div', {
+                                            key: 'label2',
+                                            className: "text-sm text-gray-600"
+                                        }, 'Housed within 5km of cultural centers')
+                                    ]),
+                                    React.createElement('div', {
+                                        key: 'metric3',
+                                        className: "text-center p-4 bg-green-50 rounded-lg"
+                                    }, [
+                                        React.createElement('div', {
+                                            key: 'value3',
+                                            className: "text-2xl font-bold text-green-600"
+                                        }, '85%'),
+                                        React.createElement('div', {
+                                            key: 'label3',
+                                            className: "text-sm text-gray-600"
+                                        }, 'Multi-generational housing requests met')
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ]),
+
+                    // Other tabs placeholder
+                    (activeTab === 'predictions' || activeTab === 'interventions' || activeTab === 'community') && 
+                    React.createElement('div', {
+                        key: 'placeholder',
+                        className: "bg-white bg-opacity-95 glass-effect p-8 rounded-lg shadow-sm border border-white border-opacity-20 text-center"
+                    }, [
+                        React.createElement('h3', {
+                            key: 'placeholder-title',
+                            className: "text-xl font-semibold mb-4 capitalize"
+                        }, `${activeTab.replace('-', ' ')} Content`),
+                        React.createElement('p', {
+                            key: 'placeholder-text',
+                            className: "text-gray-600"
+                        }, `Interactive ${activeTab.replace('-', ' ')} features would be displayed here in the full application.`)
+                    ])
+                ])
+            ]);
+        };
+
+        // Error handling wrapper
+        try {
+            ReactDOM.render(React.createElement(HousingEquityDashboard), document.getElementById('root'));
+        } catch (error) {
+            console.error('Dashboard loading error:', error);
+            // Fallback content
+            document.getElementById('root').innerHTML = `
+                <div class="min-h-screen bg-gray-100 flex items-center justify-center">
+                    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+                        <h1 class="text-2xl font-bold text-gray-900 mb-4">Housing Equity Dashboard</h1>
+                        <p class="text-gray-600 mb-4">Loading interactive dashboard...</p>
+                        <div class="space-y-2">
+                            <div class="bg-blue-50 p-3 rounded"><strong>234</strong> families housed this month</div>
+                            <div class="bg-green-50 p-3 rounded"><strong>7.2 weeks</strong> average wait time</div>
+                            <div class="bg-purple-50 p-3 rounded"><strong>85%</strong> cultural match score</div>
+                            <div class="bg-orange-50 p-3 rounded"><strong>67</strong> crisis interventions</div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-4">Please refresh the page or check your connection.</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
